@@ -95,6 +95,7 @@ def create_product(request):
     family = data.get('family', None)
     details = data.get('details', None)
     images = data.get('images', None)
+    print("Images are: ", images)
     product_images = []
     if images:
         for image in images:

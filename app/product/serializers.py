@@ -17,7 +17,8 @@ class AddProductSerializer(serializers.Serializer):
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = ['id', 'sku', 'name', 'description', 'price', 'family', 'details', 'is_archived', 'is_published']
+        fields = ['id', 'sku', 'name', 'description', 'price', 'family', 'details', 'images', 'is_archived',
+                  'is_published']
 
 
 class AddMultipleProductSerializer(serializers.Serializer):
