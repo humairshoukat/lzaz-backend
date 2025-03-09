@@ -73,10 +73,13 @@ def add_product_family(request):
 
     # Create product family
     family = ProductFamily.objects.create(name=name)
-    attributes = data['attributes'] if 'attributes' in data else []
-    if attributes:
-        for attr in attributes:
-            ProductFamilyAttribute.objects.create(family=family, attribute=attr)
+
+    # Get attribute groups
+    attribute_groups = data.get('attribute_groups', [])
+    if attribute_groups:
+        valid_attributes = AttributeGroup.objects.filter(id__in=attribute_groups)
+        for attribute in valid_attributes:
+            ProductFamilyAttribute.objects.create(family=family, attribute=attribute)
 
     serializer = ProductFamilySerializer(family)
     return Response({
@@ -88,15 +91,16 @@ def add_product_family(request):
 @api_view(['PATCH'])
 @permission_classes([IsAuth])
 def update_product_family(request, pf_id):
-    family = ProductFamily.objects.get(id=pf_id)
-    if not family:
+    try:
+        family = ProductFamily.objects.get(id=pf_id)
+    except ProductFamily.DoesNotExist:
         return Response({
             'status': 'error',
             'message': 'Product family does not exist',
-            'code': 400
-        }, status=status.HTTP_400_BAD_REQUEST)
+            'code': 404
+        }, status=status.HTTP_404_NOT_FOUND)
 
-    req_ser = AddProductFamilySerializer(data=request.data)
+    req_ser = AddProductFamilySerializer(data=request.data, partial=True)
     if not req_ser.is_valid():
         return Response({
             'status': 'error',
@@ -110,10 +114,15 @@ def update_product_family(request, pf_id):
         family.name = name
         family.save()
 
-    attributes = data['attributes'] if 'attributes' in data else []
-    if attributes:
-        for attr in attributes:
-            family_attr, created = ProductFamilyAttribute.objects.get_or_create(family=family, attribute=attr)
+    attribute_groups = data.get('attribute_groups', [])
+    remove_attribute = data.get('remove_attribute', False)
+    if attribute_groups:
+        valid_attributes = AttributeGroup.objects.filter(id__in=attribute_groups)
+        for attribute in valid_attributes:
+            if remove_attribute:
+                ProductFamilyAttribute.objects.filter(family=family, attribute=attribute).delete()
+            else:
+                family_attr, created = ProductFamilyAttribute.objects.get_or_create(family=family, attribute=attribute)
 
     serializer = ProductFamilySerializer(family)
     return Response({
@@ -125,16 +134,17 @@ def update_product_family(request, pf_id):
 @api_view(['DELETE'])
 @permission_classes([IsAuth])
 def delete_product_family(request, pf_id):
-    product_family = ProductFamily.objects.get(id=pf_id)
-    if product_family:
-        product_family.delete()
-        return Response({
-            'status': 'success',
-            'message': 'Product family deleted successfully'
-        }, status=status.HTTP_200_OK)
-    else:
+    try:
+        family = ProductFamily.objects.get(id=pf_id)
+    except ProductFamily.DoesNotExist:
         return Response({
             'status': 'error',
             'message': 'Product family does not exist',
-            'code': 400
-        }, status=status.HTTP_400_BAD_REQUEST)
+            'code': 404
+        }, status=status.HTTP_404_NOT_FOUND)
+
+    family.delete()
+    return Response({
+        'status': 'success',
+        'message': 'Product family deleted successfully'
+    }, status=status.HTTP_200_OK)

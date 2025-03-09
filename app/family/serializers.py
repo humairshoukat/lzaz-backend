@@ -25,3 +25,4 @@ class ProductFamilySerializer(serializers.ModelSerializer):
 class AddProductFamilySerializer(serializers.Serializer):
     name = serializers.CharField(required=False)
     attribute_groups = serializers.ListField(required=False)
+    remove_attribute = serializers.BooleanField(required=False)
