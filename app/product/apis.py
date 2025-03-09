@@ -112,9 +112,13 @@ def create_product(request):
     description = data.get('description')
     price = data.get('price')
     family = data.get('family', None)
+    if family:
+        try:
+            family = ProductFamily.objects.get(id=family)
+        except ProductFamily.DoesNotExist:
+            family = None
     details = data.get('details', None)
     images = data.get('images', None)
-    print("Images are: ", images)
     product_images = []
     if images:
         for image in images:
