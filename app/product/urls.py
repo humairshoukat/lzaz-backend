@@ -4,6 +4,7 @@ from app.product import apis
 
 urlpatterns = [
     path('', apis.get_products),
+    path('<int:pd_id>/', apis.get_product),
     path('add/', apis.create_product),
     path('add/bulk/', apis.add_multiple_products),
     path('<int:pd_id>/update/', apis.update_product),

@@ -68,6 +68,25 @@ def get_products(request):
     }, status=status.HTTP_200_OK)
 
 
+@api_view(['GET'])
+@permission_classes([IsAuth])
+def get_product(request, pd_id):
+    try:
+        product = Product.objects.get(id=pd_id, deleted_at=None)
+    except Product.DoesNotExist:
+        return Response({
+            'status': 'error',
+            'message': 'Product not found',
+            'code': 404
+        }, status=status.HTTP_404_NOT_FOUND)
+
+    serializer = ProductSerializer(product)
+    return Response({
+        'status': 'success',
+        'data': serializer.data
+    }, status=status.HTTP_200_OK)
+
+
 @api_view(['POST'])
 @permission_classes([IsAuth])
 def create_product(request):
