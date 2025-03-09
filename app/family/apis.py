@@ -115,13 +115,11 @@ def update_product_family(request, pf_id):
         family.save()
 
     attribute_groups = data.get('attribute_groups', [])
-    remove_attribute = data.get('remove_attribute', False)
     if attribute_groups:
         valid_attributes = AttributeGroup.objects.filter(id__in=attribute_groups)
-        for attribute in valid_attributes:
-            if remove_attribute:
-                ProductFamilyAttribute.objects.filter(family=family, attribute=attribute).delete()
-            else:
+        if valid_attributes:
+            ProductFamilyAttribute.objects.filter(family=family).delete()
+            for attribute in valid_attributes:
                 family_attr, created = ProductFamilyAttribute.objects.get_or_create(family=family, attribute=attribute)
 
     serializer = ProductFamilySerializer(family)
